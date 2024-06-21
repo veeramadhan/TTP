@@ -1,25 +1,27 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { createContext, useState } from "react";
+import { Routes, Route } from "react-router-dom";
+import Login from "./Components/LoginControl/Login/Login";
+import CreateID from "./Components/LoginControl/Create Empolyee ID/CreateID";
+import SideNav from "./Components/HomeControl/SideNav/SideNav";
 
-function App() {
+export const Appcontext = createContext(null);
+
+const App = () => {
+  const [userAccess, setUserAccess] = useState({
+    admin: false,
+    quotation: false,
+    edit: false,
+  });
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Appcontext.Provider value={{ userAccess, setUserAccess }}>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/createid" element={<CreateID />} />
+          <Route path="/sidenav/*" element={<SideNav />} />
+        </Routes>
+    </Appcontext.Provider>
   );
-}
+};
 
 export default App;
