@@ -6,66 +6,46 @@ import CompleteQuotation from "../CompleteQuotation/CompleteQuotation";
 import OngoingStatus from "../OngoingStatus/OngoingStatus";
 import AllQuotation from "../AllQuotation/AllQuotation";
 import CreateID from '../../LoginControl/Create Empolyee ID/CreateID';
-import {
-  CDBSidebar,
-  CDBSidebarContent,
-  CDBSidebarFooter,
-  CDBSidebarHeader,
-  CDBSidebarMenu,
-  CDBSidebarMenuItem,
-} from 'cdbreact';
 import { Appcontext } from '../../../App';
+import Homepage from "../Home/Homepage";
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
+import './SideNav.css'
 
 const SideNav = () => {
   const { userAccess } = useContext(Appcontext);
 
   return (
-    <div className="d-flex" style={{ height: '100vh', overflow: 'hidden' }}>
-      <CDBSidebar textColor="#fff" backgroundColor="#333" minWidth="15vw" maxWidth="20vw">
-        <CDBSidebarHeader prefix={<i className="fa fa-bars fa-large"></i>}>
-          <a href="/" className="text-decoration-none" style={{ color: 'inherit' }}>
-            Trichy Tour Planner
-          </a>
-        </CDBSidebarHeader>
 
-        <CDBSidebarContent className="sidebar-content">
-          <CDBSidebarMenu>
-            <NavLink exact="true" to="/sidenav" activeClassName="activeClicked">
-              <CDBSidebarMenuItem icon="columns">Home</CDBSidebarMenuItem>
-            </NavLink>
-            <NavLink exact="true" to="/sidenav/createquotation" activeClassName="activeClicked">
-              <CDBSidebarMenuItem icon="user">Create a Quotation</CDBSidebarMenuItem>
-            </NavLink>
-            <NavLink exact="true" to="/sidenav/pendingquotation" activeClassName="activeClicked">
-              <CDBSidebarMenuItem icon="table">Pending Quotation</CDBSidebarMenuItem>
-            </NavLink>
-            <NavLink exact="true" to="/sidenav/completequotation" activeClassName="activeClicked">
-              <CDBSidebarMenuItem icon="chart-line">Complete Quotation</CDBSidebarMenuItem>
-            </NavLink>
-            <NavLink exact="true" to="/sidenav/ongoingstatus" activeClassName="activeClicked">
-              <CDBSidebarMenuItem icon="chart-line">Ongoing Status</CDBSidebarMenuItem>
-            </NavLink>
-            <NavLink exact="true" to="/sidenav/allquotation" activeClassName="activeClicked">
-              <CDBSidebarMenuItem icon="chart-line">All Quotation</CDBSidebarMenuItem>
-            </NavLink>
-            <NavLink exact="true" to="/sidenav/reminder" activeClassName="activeClicked">
-              <CDBSidebarMenuItem icon="chart-line">Reminder</CDBSidebarMenuItem>
-            </NavLink>
-            {userAccess.admin && (
-              <NavLink exact="true" to="/sidenav/createid" activeClassName="activeClicked">
-                <CDBSidebarMenuItem icon="chart-line">Create Employee ID</CDBSidebarMenuItem>
-              </NavLink>
-            )}
-          </CDBSidebarMenu>
-        </CDBSidebarContent>
+    <div className="d-flex m-0 p-0" style={{ height: '100vh', overflow: 'hidden' }}>
 
-        <CDBSidebarFooter style={{ textAlign: 'center' }}>
-          <div style={{ padding: '20px 5px' }}>TTP</div>
-        </CDBSidebarFooter>
-      </CDBSidebar>
+      <div className="d-flex flex-column side-bar-main-head col-2 align-items-start p-4 gap-4 m-0">
+
+        <NavLink className='mb-4' exact='true' to=''>Trichy Tour Planner</NavLink>
+
+        <NavLink exact="true" to="/sidenav/home" activeClassName="activeClicked">Home</NavLink>
+        <NavLink exact="true" to="/sidenav/createquotation" activeClassName="activeClicked">Create a Quotation</NavLink>
+        <NavLink exact="true" to="/sidenav/pendingquotation" activeClassName="activeClicked">Pending Quotation</NavLink>
+        <NavLink exact="true" to="/sidenav/completequotation" activeClassName="activeClicked">Complete Quotation</NavLink>
+        <NavLink exact="true" to="/sidenav/ongoingstatus" activeClassName="activeClicked">Ongoing Status</NavLink>
+        <NavLink exact="true" to="/sidenav/allquotation" activeClassName="activeClicked">All Quotation</NavLink>
+        <NavLink exact="true" to="/sidenav/reminder" activeClassName="activeClicked">Reminder</NavLink>
+
+        {userAccess.admin &&
+          <NavLink exact="true" to="/sidenav/createid" activeClassName="activeClicked">
+            Create Employee ID
+          </NavLink>
+        }
+
+        <button className="mt-auto" style={{ all: "unset", color: '#EBF4F6' }}>Logout</button>
+
+      </div>
 
       <div className="content" style={{ flex: 1, overflow: 'auto' }}>
         <Routes>
+          <Route path="" element={<Homepage />} />
+          <Route path="/home" element={<Homepage />} />
           <Route path="/createquotation" element={<CreateQuotation />} />
           <Route path="/pendingquotation" element={<PendingQuotation />} />
           <Route path="/completequotation" element={<CompleteQuotation />} />
@@ -74,6 +54,7 @@ const SideNav = () => {
           <Route path="/createid" element={<CreateID />} />
         </Routes>
       </div>
+
     </div>
   );
 };

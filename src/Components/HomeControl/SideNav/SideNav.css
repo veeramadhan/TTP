@@ -1,0 +1,16 @@
+.side-bar-main-head{
+    background-color: #071952;
+}
+
+.side-bar-main-head a{
+    all: unset;
+    color: #EBF4F6;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 5px 0px;
+}
+
+.side-bar-main-head a:hover{
+    border-bottom: 1px solid white;
+    padding: 5px 30px 5px 0px;
+}

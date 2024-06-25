@@ -3,10 +3,12 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./Components/LoginControl/Login/Login";
 import CreateID from "./Components/LoginControl/Create Empolyee ID/CreateID";
 import SideNav from "./Components/HomeControl/SideNav/SideNav";
+import './App.css'
 
 export const Appcontext = createContext(null);
 
 const App = () => {
+
   const [userAccess, setUserAccess] = useState({
     admin: false,
     quotation: false,
@@ -22,6 +24,7 @@ const App = () => {
         </Routes>
     </Appcontext.Provider>
   );
+
 };
 
 export default App;

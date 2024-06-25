@@ -20,17 +20,15 @@ const Login = () => {
       password: values.password,
     };
     console.log("function started");
-    await axios
-      .post("http://localhost:8081/authenticateUser", dataset)
-      .then((response) => {
-        if (
-          response.status === 200 &&
-          response.data.message === "Authentication successful."
-        ) {
-          console.log(response);
-          navigate("/sidenav");
-        }
-      });
+    await axios.post("http://localhost:8081/authenticateUser", dataset).then((response) => {
+      if (
+        response.status === 200 &&
+        response.data.message === "Authentication successful."
+      ) {
+        console.log(response);
+        navigate("/sidenav");
+      }
+    });
     console.log("function ended");
   };
 
