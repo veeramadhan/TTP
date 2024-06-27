@@ -2,10 +2,15 @@
     background-color: #071952;
 }
 
+
+.sideBar{
+    width: 20%;
+}
+
 .side-bar-main-head a{
     all: unset;
     color: #EBF4F6;
-    font-size: 14px;
+    font-size: 20px;
     cursor: pointer;
     padding: 5px 0px;
 }
@@ -13,4 +18,11 @@
 .side-bar-main-head a:hover{
     border-bottom: 1px solid white;
     padding: 5px 30px 5px 0px;
+}
+
+.iconn{
+    height: 20px;
+    width: 20px;
+    margin: 0px 15px 0px 5px;
+    
 }

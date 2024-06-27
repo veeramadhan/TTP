@@ -1,6 +1,5 @@
 import React, { useContext } from "react";
 import { Routes, Route, NavLink } from "react-router-dom";
-import CreateQuotation from "../CreateQuotation/CreateQuotation";
 import PendingQuotation from "../PendingQuotation/PendingQuotation";
 import CompleteQuotation from "../CompleteQuotation/CompleteQuotation";
 import OngoingStatus from "../OngoingStatus/OngoingStatus";
@@ -8,8 +7,18 @@ import AllQuotation from "../AllQuotation/AllQuotation";
 import CreateID from '../../LoginControl/Create Empolyee ID/CreateID';
 import { Appcontext } from '../../../App';
 import Homepage from "../Home/Homepage";
-
+import CreateQuotation from "../CreateQuotation/CreateQuotation";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import create from "../../../Assets/create.png"
+import complete from "../../../Assets/complete.png"
+import remainder from "../../../Assets/remainder.png"
+import settings from "../../../Assets/settings.png"
+import pending from "../../../Assets/pending.png"
+import all from "../../../Assets/all.png"
+import Home from "../../../Assets/Home.png"
+
+
+
 
 import './SideNav.css'
 
@@ -20,17 +29,20 @@ const SideNav = () => {
 
     <div className="d-flex m-0 p-0" style={{ height: '100vh', overflow: 'hidden' }}>
 
-      <div className="d-flex flex-column side-bar-main-head col-2 align-items-start p-4 gap-4 m-0">
+      <div className="d-flex flex-column side-bar-main-head sideBar align-items-start p-4 gap-4 m-0">
+      
 
+      
         <NavLink className='mb-4' exact='true' to=''>Trichy Tour Planner</NavLink>
+       
 
-        <NavLink exact="true" to="/sidenav/home" activeClassName="activeClicked">Home</NavLink>
-        <NavLink exact="true" to="/sidenav/createquotation" activeClassName="activeClicked">Create a Quotation</NavLink>
-        <NavLink exact="true" to="/sidenav/pendingquotation" activeClassName="activeClicked">Pending Quotation</NavLink>
-        <NavLink exact="true" to="/sidenav/completequotation" activeClassName="activeClicked">Complete Quotation</NavLink>
-        <NavLink exact="true" to="/sidenav/ongoingstatus" activeClassName="activeClicked">Ongoing Status</NavLink>
-        <NavLink exact="true" to="/sidenav/allquotation" activeClassName="activeClicked">All Quotation</NavLink>
-        <NavLink exact="true" to="/sidenav/reminder" activeClassName="activeClicked">Reminder</NavLink>
+        <NavLink exact="true" to="/sidenav/home" activeClassName="activeClicked"><span><img src={Home} className="iconn"/></span>Home</NavLink>
+        <NavLink exact="true" to="/sidenav/createquotation" activeClassName="activeClicked"><span><img src={create} className="iconn"/></span>Create a Quotation</NavLink>
+        <NavLink exact="true" to="/sidenav/pendingquotation" activeClassName="activeClicked"><span><img src={pending} className="iconn"/></span>Pending Quotation</NavLink>
+        <NavLink exact="true" to="/sidenav/completequotation" activeClassName="activeClicked"><span><img src={complete} className="iconn"/></span>Complete Quotation</NavLink>
+        <NavLink exact="true" to="/sidenav/ongoingstatus" activeClassName="activeClicked"><span><img src={settings} className="iconn"/></span>Ongoing Status</NavLink>
+        <NavLink exact="true" to="/sidenav/allquotation" activeClassName="activeClicked"><span><img src={all} className="iconn"/></span>All Quotation</NavLink>
+        <NavLink exact="true" to="/sidenav/reminder" activeClassName="activeClicked"><span><img src={remainder} className="iconn"/></span>Reminder</NavLink>
 
         {userAccess.admin &&
           <NavLink exact="true" to="/sidenav/createid" activeClassName="activeClicked">
