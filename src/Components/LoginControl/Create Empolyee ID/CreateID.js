@@ -4,6 +4,7 @@ import CreateIDValidations from "./CreateIDValidations";
 import axios from "axios";
 
 const CreateID = () => {
+
   const [values, setValues] = useState({
     username: "",
     email: "",
@@ -16,22 +17,26 @@ const CreateID = () => {
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
-    if (Object.keys(errors).length === 0 && Object.keys(values).every(key => values[key] !== '')) {
-      axios
-        .post("http://localhost:8081/createid", values)
-        .then((res) => {
-          navigate("/");
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    }
-  }, [errors]);
-
   const handleEvent = (e) => {
     e.preventDefault();
-    setErrors(CreateIDValidations(values));
+    let admin = values.admin ? 1 : 0
+    let quatation = values.quotation ? 1 : 0
+    let quatationedit = values.quatationedit ? 1 : 0
+    const dataset = {
+      username: values.username,
+      email: values.email,
+      password: values.password,
+      admin: admin,
+      editAccess: quatation,
+      quotation: quatationedit,
+    }
+    console.log(dataset);
+    axios.post("http://localhost:8081/createid", dataset).then((res) => {
+      console.log(res);
+      navigate("/");
+    }).catch((err) => {
+      console.error(err);
+    });
   };
 
   const handleInput = (e) => {

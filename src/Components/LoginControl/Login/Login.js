@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 import Validations from "./Validations";
 import axios from "axios";
+import { Appcontext } from "../../../App";
 
 const Login = () => {
+
+  const { userAccess, setUserAccess } = useContext(Appcontext);
+
   const [values, setValues] = useState({
     email: "",
     password: "",
@@ -26,6 +30,11 @@ const Login = () => {
         response.data.message === "Authentication successful."
       ) {
         console.log(response);
+        setUserAccess({
+          admin: response.data.user.adminAccess,
+          quotation: response.data.user.quatationAccess,
+          edit: response.data.user.quatationedtaccess,
+        })
         navigate("/sidenav");
       }
     });
