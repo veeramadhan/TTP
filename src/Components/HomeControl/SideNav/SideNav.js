@@ -16,6 +16,8 @@ import settings from "../../../Assets/settings.png"
 import pending from "../../../Assets/pending.png"
 import all from "../../../Assets/all.png"
 import Home from "../../../Assets/Home.png"
+import id from "../../../Assets/id.png"
+
 
 
 
@@ -46,6 +48,7 @@ const SideNav = () => {
 
         {userAccess.admin &&
           <NavLink exact="true" to="/sidenav/createid" activeClassName="activeClicked">
+          <span><img src={id} className="iconn"/></span>
             Create Employee ID
           </NavLink>
         }
