@@ -23,22 +23,17 @@ const Login = () => {
       userName: values.email,
       password: values.password,
     };
-    console.log("function started");
     await axios.post("http://localhost:8081/authenticateUser", dataset).then((response) => {
-      if (
-        response.status === 200 &&
-        response.data.message === "Authentication successful."
-      ) {
-        console.log(response);
+      if (response.status === 200 && response.data.message === "Authentication successful.") {
         setUserAccess({
           admin: response.data.user.adminAccess,
           quotation: response.data.user.quatationAccess,
           edit: response.data.user.quatationedtaccess,
         })
         navigate("/sidenav");
+        localStorage.setItem('auth', true)
       }
     });
-    console.log("function ended");
   };
 
   const handleInput = (e) => {

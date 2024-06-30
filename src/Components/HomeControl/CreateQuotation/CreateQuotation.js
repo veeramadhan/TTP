@@ -1,172 +1,278 @@
 import React, { useState, useEffect } from "react";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./CreateQuotation.css";
 import axios from "axios";
+import moment from 'moment';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser } from '@fortawesome/free-solid-svg-icons'
 
 const CreateQuotation = () => {
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [numberOfDays, setNumberOfDays] = useState(1);
-  const [cities, setCities] = useState([]);
-  const [packageType, setPackageType] = useState("");
-  const [count, setCount] = useState(1);
+
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  const initialCities = [
+    {
+      "id": 0,
+      "city": "",
+      "places": []
+    }
+  ];
+
+  const [cities, setCities] = useState(initialCities);
   const [places, setPlaces] = useState([]);
 
-  const handlePackageChange = (e) => {
-    setPackageType(e.target.value);
+  const [packageType, setPackageType] = useState("CollegeIV");
+  const [headCount, setHeadCount] = useState(1);
+
+  const [suggestionPlaces, setSuggestionsPlaces] = useState([])
+
+  const handleCount = (e) => {
+    setHeadCount(parseInt(e.target.value, 10));
+  };
+
+
+
+  const [currencyCity, setCurrenctCity] = useState(0)
+
+  const handleCityChange = async (index, value) => {
+
+    const dataset = {
+      id: index,
+      city: value,
+      places: []
+    };
+
+    const updatedCities = [...cities];
+    if (index >= updatedCities.length) {
+      for (let i = updatedCities.length; i <= index; i++) {
+        updatedCities[i] = { id: i, city: "", places: [] };
+      }
+    }
+    updatedCities[index] = dataset;
+    setCities(updatedCities);
+    setCurrenctCity(index)
+    await getSuggestions()
+
   };
 
   useEffect(() => {
-    if (startDate && numberOfDays > 0) {
-      const newEndDate = new Date(startDate);
-      newEndDate.setDate(startDate.getDate() + numberOfDays - 1);
-      setEndDate(newEndDate);
-      setCities(Array(numberOfDays).fill(""));
-    } else {
-      setEndDate(null);
-      setCities([]);
-    }
-  }, [startDate, numberOfDays]);
+    getSuggestions()
+  }, [cities])
 
-  const handleDaysChange = (e) => {
-    setNumberOfDays(parseInt(e.target.value, 10));
-  };
-
-  const handleCount = (e) => {
-    setCount(parseInt(e.target.value, 10));
-  };
-
-  const handleCityChange = (index, value) => {
-    const newCities = [...cities];
-    newCities[index] = value;
-    setCities(newCities);
-
-    // Fetch places data
-    const url = "http://localhost:8081/places";
-    axios.get(url)
-      .then((res) => {
-        console.log("API Response:", res.data); // Debugging line
-        setPlaces(res.data);
+  const getSuggestions = async () => {
+    if (cities[currencyCity].city !== '') {
+      let filteredPlaces = places.filter((place) => {
+        return !cities?.[currencyCity]?.places?.includes(place) && place.city.toLowerCase().includes(cities[currencyCity].city.toLowerCase());
       })
-      .catch((error) => {
-        console.error("Error fetching places data:", error); // Debugging line
-      });
-  };
+      setSuggestionsPlaces(filteredPlaces)
+    } else {
+      setSuggestionsPlaces([])
+    }
+  }
+
+  const handleUpdatePlaces = async (index, value) => {
+
+    const dataset = {
+      id: index,
+      city: value.city,
+      places: [...cities[index].places, value]
+    };
+
+    const updatedCities = [...cities];
+    if (index >= updatedCities.length) {
+      for (let i = updatedCities.length; i <= index; i++) {
+        updatedCities[i] = { id: i, city: "", places: [] };
+      }
+    }
+    updatedCities[index] = dataset;
+    setCities(updatedCities);
+
+
+
+  }
+
+
+
+  const [tripDataDetails, setTripDateDetails] = useState({
+    startDate: moment(today).format('YYYY-MM-DD'),
+    endDate: moment(tomorrow).format('YYYY-MM-DD'),
+    betweenDaysCount: 1,
+  })
+
+  const [betweenDays, setBetweenDays] = useState({
+    days: []
+  })
+
+  const handleDateDetails = (e, name) => {
+    setTripDateDetails({
+      ...tripDataDetails,
+      [name]: moment(e.target.value).format('YYYY-MM-DD')
+    })
+  }
+
+  useEffect(() => {
+
+    const inBetween = [];
+    const startDt = new Date(tripDataDetails.startDate);
+    const endDt = new Date(tripDataDetails.endDate);
+
+    let currentDate = new Date(startDt);
+    currentDate.setDate(currentDate.getDate() + 1);
+
+    while (currentDate <= endDt) {
+      inBetween.push(currentDate.toISOString().split('T')[0]);
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    setBetweenDays({
+      ...betweenDays,
+      days: inBetween
+    })
+
+    setTripDateDetails({
+      ...tripDataDetails,
+      betweenDaysCount: Object.keys(inBetween).length
+    })
+
+  }, [tripDataDetails.startDate, tripDataDetails.endDate])
+
+
+  const getPlaces = async () => {
+    await axios.get('http://localhost:8081/places').then((res) => {
+      setPlaces(res.data);
+    }).catch((error) => {
+      console.error("Error fetching places data:", error); // Debugging line
+    });
+  }
+
+  useEffect(() => {
+    getPlaces()
+  }, [])
 
   return (
-    <div className="d-flex">
-      <div className="createPageMain">
-        <div className="header">Create Quotation</div>
-        <form>
-          <div className="d-flex gap-5">
-            <div className="gap-5 packageType mb-4">
-              <label htmlFor="packageType" className="form-label">
-                Package Type
-              </label>
-              <select
-                className="form-control"
-                id="packageType"
-                value={packageType}
-                onChange={handlePackageChange}
-              >
-                <option value="">Select package type</option>
-                <option value="CollegeIV">College IV</option>
-                <option value="family">Family Trip</option>
-                <option value="friendstrip">Friends Trip</option>
-                <option value="Couplestrip">Couples Trip</option>
-                <option value="CorporateTrip">Corporate Trip</option>
-              </select>
-            </div>
+    <div className="row container-fluid m-0 p-0">
 
-            <div>
-              <label className="form-label">Head Count</label>
-              <input className="form-control" type="number" value={count} onChange={handleCount} />
-            </div>
+      <div className="col-12 d-flex align-items-center py-3 px-4 border-bottom m-0 p-0">
+        <h4>Create Quotation</h4>
+        <button className="btn btn-secondary ms-auto">Create a new quatation</button>
+      </div>
+
+      <div className="col-7 px-2 py-3 d-flex flex-wrap justify-content-start rounded-3 align-items-start align-content-start m-0 border my-3 mx-4">
+
+        <h6 className="border-bottom pb-2 mb-2 col-12 px-3 m-0 p-0">Quatation details</h6>
+
+        <div className="col-lg-6 m-0 p-0 mb-2 px-3">
+          <label style={{ fontSize: 12, color: 'gray' }} className="m-0 p-0 mb-1">Package Type</label>
+          <select className="form-control rounded-1" style={{ fontSize: 12 }} id="packageType" value={packageType} onChange={(e) => setPackageType(e.target.value)} >
+            <option value="" disabled>Select package type</option>
+            <option value="CollegeIV">College IV</option>
+            <option value="Family">Family Trip</option>
+            <option value="Friends trip">Friends Trip</option>
+            <option value="Couples trip">Couples Trip</option>
+            <option value="Corporate Trip">Corporate Trip</option>
+          </select>
+        </div>
+
+        <div className="col-lg-6 m-0 p-0 mb-2 px-3">
+          <label style={{ fontSize: 12, color: 'gray' }} className="m-0 p-0 mb-1">Head Count</label>
+          <input className="form-control rounded-1" style={{ fontSize: 12 }} type="number" value={headCount} onChange={handleCount} />
+        </div>
+
+        <div className="col-12 d-flex m-0 p-0 px-3">
+          <div className="col-lg-4 d-flex flex-column m-0 p-0">
+            <label style={{ fontSize: 12, color: 'gray' }} className="m-0 p-0 mb-1">Start Date</label>
+            <input type="date" value={tripDataDetails.startDate} name="startDate" min={today} style={{ fontSize: 12 }} onChange={(e) => handleDateDetails(e, "startDate")} className="form-control startDate-endDate rounded-1" id="startDate" placeholderText="Select start date" />
           </div>
-
-          <div className="d-flex gap-5 mb-4">
-            <div className="form-group">
-              <label htmlFor="inputDays" className="form-label">
-                Number of Days
-              </label>
-              <input
-                type="number"
-                className="form-control"
-                id="inputDays"
-                value={numberOfDays}
-                onChange={handleDaysChange}
-                min="1"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="startDate" className="form-label">
-                Start Date
-              </label>
-              <DatePicker
-                selected={startDate}
-                onChange={(date) => setStartDate(date)}
-                dateFormat="yyyy/MM/dd"
-                className="form-control"
-                id="startDate"
-                placeholderText="Select start date"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="endDate" className="form-label">
-                End Date
-              </label>
-              <DatePicker
-                selected={endDate}
-                onChange={(date) => setEndDate(date)}
-                dateFormat="yyyy/MM/dd"
-                className="form-control"
-                id="endDate"
-                placeholderText="Select end date"
-                readOnly
-              />
-            </div>
+          <div className="col-lg-4 d-flex flex-column m-0 p-0 px-3">
+            <label style={{ fontSize: 12, color: 'gray' }} className="m-0 p-0 mb-1">End Date</label>
+            <input type="date" value={tripDataDetails.endDate} name="endDate" min={tripDataDetails.startDate} style={{ fontSize: 12 }} onChange={(e) => handleDateDetails(e, "endDate")} className="form-control startDate-endDate rounded-1" id="endDate" placeholderText="Select end date" />
           </div>
+          <div className="col-lg-4 d-flex flex-column m-0 p-0 px-3">
+            <label style={{ fontSize: 12, color: 'gray' }} className="m-0 p-0 mb-1">Number of Days</label>
+            <input type="number" className="form-control rounded-1" style={{ fontSize: 12 }} id="inputDays" name="betweenDaysCount" value={tripDataDetails.betweenDaysCount} disabled onChange={(e) => setTripDateDetails({ ...tripDataDetails, betweenDaysCount: e.target.value })} min="1" />
+          </div>
+        </div>
 
-          {startDate && (
-            <div className="city-inputs-container">
-              {cities.map((city, index) => (
-                <div className="form-group" key={index}>
-                  <label htmlFor={`city-${index}`} className="form-label">
-                    City for Day {index + 1}
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control sizeCity"
-                    id={`city-${index}`}
-                    value={city}
-                    onChange={(e) => handleCityChange(index, e.target.value)}
-                  />
+        <div className="mt-4 col-12">
+          <h6 className="border-bottom pb-2 mb-2 col-12 px-3 m-0 p-0">City details</h6>
+          <div className="col-12 d-flex flex-wrap m-0 p-0 px-2 justify-content-start">
+            {
+              betweenDays.days.map((city, index) =>
+                <div key={index} className="col-lg-4 m-0 p-0 mb-2 px-2">
+                  <label style={{ fontSize: 12, color: 'gray' }} className="m-0 p-0 mb-1" htmlFor={`city-${index}`}>City for Day {index + 1}</label>
+                  <input type="text" className="form-control rounded-1" style={{ fontSize: 12 }} id={`city-${index}`} value={cities?.[index]?.city} placeholder="Ex : wayanad" onChange={(e) => handleCityChange(index, e.target.value)} />
                 </div>
-              ))}
-            </div>
-          )}
-        </form>
-      </div>
-
-      <div className="quotation">
-        <div className="header">Final Quotation</div>
-
-        {/* Display the fetched places */}
-        {places.length > 0 && (
-          <div className="places-list mt-4">
-            <h3>Fetched Places</h3>
-            <ul>
-              {places.map((place) => (
-                <li key={place.id}>
-                  <strong>{place.name}</strong> in {place.city} - {place.description}
-                </li>
-              ))}
-            </ul>
+              )
+            }
           </div>
-        )}
+        </div>
+
+        <div className="mt-4 col-12" style={{ display: suggestionPlaces.length > 0 ? '' : 'none' }}>
+          <h6 className="border-bottom pb-2 mb-2 col-12 px-3 m-0 p-0">Suggestions</h6>
+          <div className="d-flex flex-wrap m-0 p-0">
+            {
+              suggestionPlaces.map((value, key) => (
+                <div className="border py-1 px-3 col-12 m-0 p-0 my-2 mx-2" key={key} onClick={() => handleUpdatePlaces(currencyCity, value)}>
+                  <div className="d-flex m-0 p-0 mb-1 align-items-center justify-content-between">
+                    <p className="m-0 p-0" style={{ fontSize: 14, fontWeight: 600 }}>{value.city} ({value.name})</p>
+                    <p style={{ fontSize: 12 }} className="m-0 p-0">{value.maxpax} x <FontAwesomeIcon icon={faUser} style={{ fontSize: 12 }} /></p>
+                  </div>
+                  <div className="d-flex m-0 p-0 align-items-center">
+                    <p className="m-0 p-0" style={{ fontSize: 12, fontWeight: 600, lineHeight: 1 }}>Adult rate : {value.adultrate} INR , </p>
+                    <p className="m-0 p-0" style={{ fontSize: 12, fontWeight: 600, lineHeight: 1 }}>Child rate : {value.childrate} INR</p>
+                    <span className="m-0 p-0 mx-2" style={{ fontSize: 12 }}>( {value.packagetype} )</span>
+                  </div>
+                  <p className="text-muted my-1" style={{ fontSize: 10, lineHeight: 1.5 }}>{value.description}</p>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+
       </div>
+
+
+      <div className="col-4 px-2 py-3 d-flex flex-wrap rounded-3 align-items-start align-content-start m-0 border my-3">
+        <h6 className="border-bottom pb-2 mb-2 col-12 px-2 m-0 p-0">Reference</h6>
+        <div className="px-2 col-12">
+          <h6 className="m-0 p-0 mb-1">Package details</h6>
+          <p className="m-0 p-0" style={{ fontSize: 13 }}>Package type : {packageType}</p>
+          <p className="m-0 p-0" style={{ fontSize: 13 }}>{headCount} x persons , {tripDataDetails.betweenDaysCount} x days</p>
+          <p className="m-0 p-0" style={{ fontSize: 13 }}>Start / End date : {moment(tripDataDetails.startDate).format('YYYY-MM-DD')} -  {moment(tripDataDetails.endDate).format('YYYY-MM-DD')}</p>
+        </div>
+        <div className="px-2 col-12 my-3">
+          <h6 className="m-0 p-0 mb-1">Trip details</h6>
+          <div className="d-flex flex-column align-items-start">
+            <span>Start date : {moment(tripDataDetails.startDate).format('YYYY-MM-DD')}</span>
+            <div className="px-2 my-2">
+              {
+                betweenDays.days.map((value, key) => (
+                  <div className="mb-2">
+                    <div className="d-flex align-items-center m-0 p-0">
+                      <p className="m-0 p-0" style={{ fontSize: 12 }}>Day {key}</p>
+                      <span className="m-0 p-0 px-1 text-muted" style={{ fontSize: 10 }}>( {value} )</span>
+                      <span className="m-0 p-0 px-1 text-muted" style={{ fontSize: 10 }}>-</span>
+                      <p className="m-0 p-0" style={{ fontSize: 12 }}>{cities?.[key]?.city}</p>
+                    </div>
+                    <div className="day-wise-placesDetails">
+                      {
+                        cities?.[key]?.places?.length > 0 &&
+                        cities?.[key]?.places?.map((value, index) => (
+                          <p key={key} style={{ fontSize: 12 }} className="m-0 p-0 px-1" index={index}>{value.city} ( {value.name} )</p>
+                        ))
+                      }
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+            <span>End date : {moment(tripDataDetails.endDate).format('YYYY-MM-DD')}</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };

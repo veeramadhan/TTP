@@ -1,28 +1,34 @@
-.side-bar-main-head{
+.side-bar-main-head {
     background-color: #071952;
 }
 
-
-.sideBar{
-    width: 20%;
+.sideBar {
+    width: 18%;
 }
 
-.side-bar-main-head a{
+.side-bar-main-head a {
     all: unset;
     color: #EBF4F6;
-    font-size: 20px;
+    font-size: 12px;
     cursor: pointer;
     padding: 5px 0px;
+    display: flex;
+    align-items: center;
 }
 
-.side-bar-main-head a:hover{
+.side-bar-main-head a:first-child {
+    font-size: 20px;
     border-bottom: 1px solid white;
-    padding: 5px 30px 5px 0px;
+    width: 100%;
 }
 
-.iconn{
-    height: 20px;
-    width: 20px;
-    margin: 0px 15px 0px 5px;
-    
+.iconn {
+    height: 16px;
+    width: 16px;
+    margin: auto 10px auto 0px;
+}
+
+.side-bar-main-head a span {
+    line-height: 10px;
+    margin: auto;
 }
