@@ -9,7 +9,7 @@
 .side-bar-main-head a {
     all: unset;
     color: #EBF4F6;
-    font-size: 12px;
+    font-size: 13px;
     cursor: pointer;
     padding: 5px 0px;
     display: flex;
@@ -26,6 +26,12 @@
     height: 16px;
     width: 16px;
     margin: auto 10px auto 0px;
+}
+
+.Createbutton{
+    all: unset !important;
+    color: white !important;
+    font-size: 13px !important;
 }
 
 .side-bar-main-head a span {

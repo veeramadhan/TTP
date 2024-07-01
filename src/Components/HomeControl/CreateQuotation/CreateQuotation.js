@@ -162,6 +162,7 @@ const CreateQuotation = () => {
       <div className="col-7 px-2 py-3 d-flex flex-wrap justify-content-start rounded-3 align-items-start align-content-start m-0 border my-3 mx-4">
 
         <h6 className="border-bottom pb-2 mb-2 col-12 px-3 m-0 p-0">Quatation details</h6>
+        
 
         <div className="col-lg-6 m-0 p-0 mb-2 px-3">
           <label style={{ fontSize: 12, color: 'gray' }} className="m-0 p-0 mb-1">Package Type</label>
@@ -235,7 +236,7 @@ const CreateQuotation = () => {
 
 
       <div className="col-4 px-2 py-3 d-flex flex-wrap rounded-3 align-items-start align-content-start m-0 border my-3">
-        <h6 className="border-bottom pb-2 mb-2 col-12 px-2 m-0 p-0">Reference</h6>
+        <h6 className="border-bottom pb-2 mb-2 col-12 px-2 m-0 p-0">Final Quotation</h6>
         <div className="px-2 col-12">
           <h6 className="m-0 p-0 mb-1">Package details</h6>
           <p className="m-0 p-0" style={{ fontSize: 13 }}>Package type : {packageType}</p>
@@ -251,7 +252,7 @@ const CreateQuotation = () => {
                 betweenDays.days.map((value, key) => (
                   <div className="mb-2">
                     <div className="d-flex align-items-center m-0 p-0">
-                      <p className="m-0 p-0" style={{ fontSize: 12 }}>Day {key}</p>
+                      <p className="m-0 p-0" style={{ fontSize: 12 }}>Day {key + 1}</p>
                       <span className="m-0 p-0 px-1 text-muted" style={{ fontSize: 10 }}>( {value} )</span>
                       <span className="m-0 p-0 px-1 text-muted" style={{ fontSize: 10 }}>-</span>
                       <p className="m-0 p-0" style={{ fontSize: 12 }}>{cities?.[key]?.city}</p>
