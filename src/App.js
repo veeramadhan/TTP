@@ -15,23 +15,27 @@ const App = () => {
     edit: false,
   });
 
-  let auth = localStorage.getItem('auth')
+  const [userDetails, setUserDetails] = useState([]);
 
-  const navigate = useNavigate();
+  let accessDetails = localStorage.getItem('userAccess');
+  let auth = localStorage.getItem('auth');
 
   useEffect(() => {
-    if (auth) {
-      navigate('/sidenav')
+    if (auth != '') {
+      setUserDetails(JSON.parse(accessDetails))
     }
-    console.log(auth);
-  }, [auth])
+  }, [auth, accessDetails])
+
+  useEffect(() => {
+    console.log(userDetails);
+  }, [userDetails])
 
   return (
-    <Appcontext.Provider value={{ userAccess, setUserAccess }}>
+    <Appcontext.Provider value={{ userAccess, setUserAccess, userDetails, setUserDetails }}>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/createid" element={<CreateID />} />
-        <Route path="/sidenav/*" element={<SideNav />} />
+        <Route path="/home/*" element={<SideNav />} />
       </Routes>
     </Appcontext.Provider>
   );

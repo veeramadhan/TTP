@@ -18,45 +18,36 @@ import Home from "../../../Assets/Home.png"
 import id from "../../../Assets/id.png"
 import dropQuotation from "../../../Assets/dropQuotation.png"
 import './SideNav.css'
+import axios from "axios";
 
 const SideNav = () => {
-  const { userAccess } = useContext(Appcontext);
+
+  const { userAccess, userDetails } = useContext(Appcontext);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     navigate('/')
-    localStorage.setItem('auth', false)
   };
-
 
   const handleClick = async () => {
-    try {
-      const response = await fetch('http://localhost:8081/createQuotation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          // Send only minimal data to generate the ID
-          packagetype: ''  // Or any other minimal required data
-        }),
-      });
-  
-      const result = await response.json();
-      if (response.ok) {
-        console.log(result.message); // Log or handle the success message
-        console.log('New Quotation ID:', result.id); // Log the new ID
-  
-        // Redirect to the Create Quotation page and pass the ID
-        navigate('/sidenav/createquotation', { state: { id: result.id } });
-      } else {
-        console.error(result.error); // Log or handle errors
-      }
-    } catch (error) {
-      console.error("Error creating quotation record:", error); // Log any network errors
+
+    console.log(userDetails);
+
+    const dataset = {
+      userId: userDetails.userId,
+      name: userDetails.userName
     }
+
+    await axios.post('http://localhost:8081/createQuotation', dataset).then((response) => {
+      if (response.status == 200 && response.data.status == 200) {
+        navigate(`createquotation/${response.data.id}`)
+      }
+    }).catch((err) => {
+      console.log(err);
+    })
+
   };
-  
+
   return (
     <div className="d-flex m-0 p-0" style={{ height: '100vh', overflow: 'hidden' }}>
 
@@ -64,15 +55,15 @@ const SideNav = () => {
 
         <NavLink className='mb-4' exact='true' to=''>Trichy Tour Planner</NavLink>
 
-        <NavLink exact="true" to="/sidenav/home" activeClassName="activeClicked">
+        <NavLink exact="true" to="/home" activeClassName="activeClicked">
           <img src={Home} className="iconn" />
           <span className="m-0 p-0">Home</span>
         </NavLink>
 
         <button onClick={handleClick} className="Createbutton">
-      <img src={create} className="iconn" alt="Create" />
-      <span className="m-0 p-0">Create a Quotation</span>
-    </button>
+          <img src={create} className="iconn" alt="Create" />
+          <span className="m-0 p-0">Create a Quotation</span>
+        </button>
 
         <NavLink exact="true" to="/sidenav/pendingquotation" activeClassName="activeClicked">
           <img src={pending} className="iconn" />
@@ -119,7 +110,7 @@ const SideNav = () => {
         <Routes>
           <Route path="" element={<Homepage />} />
           <Route path="/home" element={<Homepage />} />
-          <Route path="/createquotation" element={<CreateQuotation />} />
+          <Route path="createquotation/:id" element={<CreateQuotation />} />
           <Route path="/pendingquotation" element={<PendingQuotation />} />
           <Route path="/completequotation" element={<CompleteQuotation />} />
           <Route path="/ongoingstatus" element={<OngoingStatus />} />

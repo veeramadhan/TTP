@@ -7,7 +7,7 @@ import { Appcontext } from "../../../App";
 
 const Login = () => {
 
-  const { userAccess, setUserAccess } = useContext(Appcontext);
+  const { setUserAccess, setUserDetails } = useContext(Appcontext);
 
   const [values, setValues] = useState({
     email: "",
@@ -24,15 +24,20 @@ const Login = () => {
       password: values.password,
     };
     await axios.post("http://localhost:8081/authenticateUser", dataset).then((response) => {
-      if (response.status === 200 && response.data.message === "Authentication successful.") {
-        setUserAccess({
-          admin: response.data.user.adminAccess,
-          quotation: response.data.user.quatationAccess,
-          edit: response.data.user.quatationedtaccess,
-        })
-        navigate("/sidenav");
-        localStorage.setItem('auth', true)
+      const responseDataset = {
+        userName: response.data.user.name,
+        mailId: response.data.user.email,
+        userId: response.data.user.id
       }
+      localStorage.setItem('userAccess', JSON.stringify(responseDataset))
+      localStorage.setItem('auth', responseDataset.userId)
+      setUserDetails(responseDataset);
+      setUserAccess({
+        admin: response.data.user.adminAccess,
+        quotation: response.data.user.quatationAccess,
+        edit: response.data.user.quatationedtaccess,
+      })
+      navigate("/home");
     });
   };
 

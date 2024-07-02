@@ -1,16 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import "./CreateQuotation.css";
 import axios from "axios";
 import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons'
+import { useLocation, useParams } from "react-router-dom";
+import { Appcontext } from "../../../App";
 
 const CreateQuotation = () => {
 
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
+
+
+  const saveQuatatioButton = useRef();
+  const loadingRefSaveQuatation = useRef();
+
+  const { id } = useParams()
 
   const initialCities = [
     {
@@ -23,7 +31,7 @@ const CreateQuotation = () => {
   const [cities, setCities] = useState(initialCities);
   const [places, setPlaces] = useState([]);
 
-  const [packageType, setPackageType] = useState("");
+  const [packageType, setPackageType] = useState("CollegeIV");
   const [headCount, setHeadCount] = useState(1);
 
   const [suggestionPlaces, setSuggestionsPlaces] = useState([])
@@ -142,7 +150,7 @@ const CreateQuotation = () => {
   const getPlaces = async () => {
     await axios.get('http://localhost:8081/places').then((res) => {
       setPlaces(res.data);
-      console.log("check",res.data);
+      console.log("check", res.data);
     }).catch((error) => {
       console.error("Error fetching places data:", error); // Debugging line
     });
@@ -151,6 +159,65 @@ const CreateQuotation = () => {
   useEffect(() => {
     getPlaces()
   }, [])
+
+  const handleSaveQuatation = async () => {
+
+    saveQuatatioButton.current.disabled = true;
+    loadingRefSaveQuatation.current.style.display = "block";
+
+    const dataset = {
+      packageType: packageType,
+      startDate: tripDataDetails.startDate,
+      endDate: tripDataDetails.endDate,
+      inbetweenDays: tripDataDetails.betweenDaysCount,
+      startingPoint: '',
+      endingPoint: '',
+      pickupPoint: '',
+      dropPoint: '',
+      childCount: '',
+      adultCount: '',
+      transportCategory: '',
+      transportation: '',
+      roomCategory: '',
+      places: '',
+      boatHouse: '',
+      boatHouseDetails: '',
+      event: '',
+      quataionCost: '',
+      quatationStatus: '',
+      kmsTravels: '',
+      transporataionDays: '',
+      foodCost: '',
+      id: ''
+    }
+
+    try {
+      await axios.post(`http://localhost:8081/saveQuatation/${id}`, dataset).then((response) => {
+        setTimeout(() => {
+          if (response.status == 200 && response.data.staus == 200) {
+            saveQuatatioButton.current.disabled = false;
+            loadingRefSaveQuatation.current.style.display = "none";
+          }
+        }, 1000);
+      }).catch((err) => {
+        console.log(err)
+      })
+    } catch (error) {
+      console.log(error);
+    }
+
+  }
+
+  const location = useLocation();
+
+  // need to work on this
+  const getDetailsAboutQuataion = async () => {
+
+  }
+
+  useEffect(() => {
+    console.log(location.state);
+  }, [location])
 
   return (
     <div className="row container-fluid m-0 p-0">
@@ -162,8 +229,10 @@ const CreateQuotation = () => {
 
       <div className="col-7 px-2 py-3 d-flex flex-wrap justify-content-start rounded-3 align-items-start align-content-start m-0 border my-3 mx-4">
 
-        <h6 className="border-bottom pb-2 mb-2 col-12 px-3 m-0 p-0">Quatation details</h6>
-        
+        <div className="d-flex justify-content-between align-items-center col-12 border-bottom pb-2 px-3 mb-2 m-0 p-0">
+          <h6 className="m-0 p-0">Quatation details</h6>
+          <span className="m-0 p-0">Ref no : {id}</span>
+        </div>
 
         <div className="col-lg-6 m-0 p-0 mb-2 px-3">
           <label style={{ fontSize: 12, color: 'gray' }} className="m-0 p-0 mb-1">Package Type</label>
@@ -235,15 +304,17 @@ const CreateQuotation = () => {
 
       </div>
 
-
       <div className="col-4 px-2 py-3 d-flex flex-wrap rounded-3 align-items-start align-content-start m-0 border my-3">
+
         <h6 className="border-bottom pb-2 mb-2 col-12 px-2 m-0 p-0">Final Quotation</h6>
+
         <div className="px-2 col-12">
           <h6 className="m-0 p-0 mb-1">Package details</h6>
           <p className="m-0 p-0" style={{ fontSize: 13 }}>Package type : {packageType}</p>
           <p className="m-0 p-0" style={{ fontSize: 13 }}>{headCount} x persons , {tripDataDetails.betweenDaysCount} x days</p>
           <p className="m-0 p-0" style={{ fontSize: 13 }}>Start / End date : {moment(tripDataDetails.startDate).format('YYYY-MM-DD')} -  {moment(tripDataDetails.endDate).format('YYYY-MM-DD')}</p>
         </div>
+
         <div className="px-2 col-12 my-3">
           <h6 className="m-0 p-0 mb-1">Trip details</h6>
           <div className="d-flex flex-column align-items-start">
@@ -273,6 +344,11 @@ const CreateQuotation = () => {
             <span>End date : {moment(tripDataDetails.endDate).format('YYYY-MM-DD')}</span>
           </div>
         </div>
+
+        <div className="col-12 border-top px-1 pt-3">
+          <button className="btn btn-primary d-flex align-items-center" ref={saveQuatatioButton} onClick={() => handleSaveQuatation()}>Save quatation<i ref={loadingRefSaveQuatation} style={{ display: 'none' }} class="fa-solid fa-spinner fa-spin-pulse ml-2"></i></button>
+        </div>
+
       </div>
 
     </div>
