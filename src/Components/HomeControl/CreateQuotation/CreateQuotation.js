@@ -23,7 +23,7 @@ const CreateQuotation = () => {
   const [cities, setCities] = useState(initialCities);
   const [places, setPlaces] = useState([]);
 
-  const [packageType, setPackageType] = useState("CollegeIV");
+  const [packageType, setPackageType] = useState("");
   const [headCount, setHeadCount] = useState(1);
 
   const [suggestionPlaces, setSuggestionsPlaces] = useState([])
@@ -142,6 +142,7 @@ const CreateQuotation = () => {
   const getPlaces = async () => {
     await axios.get('http://localhost:8081/places').then((res) => {
       setPlaces(res.data);
+      console.log("check",res.data);
     }).catch((error) => {
       console.error("Error fetching places data:", error); // Debugging line
     });
@@ -250,7 +251,7 @@ const CreateQuotation = () => {
             <div className="px-2 my-2">
               {
                 betweenDays.days.map((value, key) => (
-                  <div className="mb-2">
+                  <div className="mb-2" key={key}>
                     <div className="d-flex align-items-center m-0 p-0">
                       <p className="m-0 p-0" style={{ fontSize: 12 }}>Day {key + 1}</p>
                       <span className="m-0 p-0 px-1 text-muted" style={{ fontSize: 10 }}>( {value} )</span>
@@ -261,7 +262,7 @@ const CreateQuotation = () => {
                       {
                         cities?.[key]?.places?.length > 0 &&
                         cities?.[key]?.places?.map((value, index) => (
-                          <p key={key} style={{ fontSize: 12 }} className="m-0 p-0 px-1" index={index}>{value.city} ( {value.name} )</p>
+                          <p key={index} style={{ fontSize: 12 }} className="m-0 p-0 px-1" >{index + 1}.  {value.name} </p>
                         ))
                       }
                     </div>
