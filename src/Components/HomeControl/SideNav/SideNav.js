@@ -30,23 +30,28 @@ const SideNav = () => {
   };
 
   const handleClick = async () => {
-
-    console.log(userDetails);
-
+  try {
     const dataset = {
       userId: userDetails.userId,
-      name: userDetails.userName
+      name: userDetails.userName,
+    };
+
+    const response = await axios.post('http://localhost:8081/createQuotation', dataset);
+    
+    if (response.status === 200 && response.data.status === 200) {
+      navigate(`createquotation/${response.data.id}`);
+    } else {
+      console.error('Error:', response.data.message);
+      // Display an error message to the user
+      alert('Failed to create quotation: ' + response.data.message);
     }
+  } catch (err) {
+    console.error('API call failed:', err);
+    // Display a general error message to the user
+    alert('An error occurred while creating the quotation. Please try again later.');
+  }
+};
 
-    await axios.post('http://localhost:8081/createQuotation', dataset).then((response) => {
-      if (response.status == 200 && response.data.status == 200) {
-        navigate(`createquotation/${response.data.id}`)
-      }
-    }).catch((err) => {
-      console.log(err);
-    })
-
-  };
 
   return (
     <div className="d-flex m-0 p-0" style={{ height: '100vh', overflow: 'hidden' }}>
@@ -65,38 +70,38 @@ const SideNav = () => {
           <span className="m-0 p-0">Create a Quotation</span>
         </button>
 
-        <NavLink exact="true" to="/sidenav/pendingquotation" activeClassName="activeClicked">
+        <NavLink exact="true" to="/home/pendingquotation" activeClassName="activeClicked">
           <img src={pending} className="iconn" />
           <span className="m-0 p-0">Pending Quotation</span>
         </NavLink>
 
-        <NavLink exact="true" to="/sidenav/completequotation" activeClassName="activeClicked">
+        <NavLink exact="true" to="/home/completequotation" activeClassName="activeClicked">
           <img src={complete} className="iconn" />
           <span className="m-0 p-0">Complete Quotation</span>
         </NavLink>
 
-        <NavLink exact="true" to="/sidenav/ongoingstatus" activeClassName="activeClicked">
+        <NavLink exact="true" to="/home/ongoingstatus" activeClassName="activeClicked">
           <img src={settings} className="iconn" />
           <span className="m-0 p-0">Ongoing Status</span>
         </NavLink>
-
-        <NavLink exact="true" to="/sidenav/allquotation" activeClassName="activeClicked">
+        
+        <NavLink exact="true" to="/home/allquotation" activeClassName="activeClicked">
           <img src={all} className="iconn" />
           <span className="m-0 p-0">All Quotation</span>
         </NavLink>
 
-        <NavLink exact="true" to="/sidenav/reminder" activeClassName="activeClicked">
+        <NavLink exact="true" to="/home/reminder" activeClassName="activeClicked">
           <img src={dropQuotation} className="iconn" />
           <span className="m-0 p-0">Drop Quotation</span>
         </NavLink>
 
-        <NavLink exact="true" to="/sidenav/reminder" activeClassName="activeClicked">
+        <NavLink exact="true" to="/home/reminder" activeClassName="activeClicked">
           <img src={remainder} className="iconn" />
           <span className="m-0 p-0">Reminder</span>
         </NavLink>
 
         {userAccess.admin &&
-          <NavLink exact="true" to="/sidenav/createid" activeClassName="activeClicked">
+          <NavLink exact="true" to="/home/createid" activeClassName="activeClicked">
             <img src={id} className="iconn" />
             <span>Create Employee ID</span>
           </NavLink>
@@ -110,7 +115,7 @@ const SideNav = () => {
         <Routes>
           <Route path="" element={<Homepage />} />
           <Route path="/home" element={<Homepage />} />
-          <Route path="createquotation/:id" element={<CreateQuotation />} />
+          <Route path="/createquotation/:id" element={<CreateQuotation />} />
           <Route path="/pendingquotation" element={<PendingQuotation />} />
           <Route path="/completequotation" element={<CompleteQuotation />} />
           <Route path="/ongoingstatus" element={<OngoingStatus />} />

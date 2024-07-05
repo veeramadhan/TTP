@@ -31,7 +31,7 @@ const CreateQuotation = () => {
   const [cities, setCities] = useState(initialCities);
   const [places, setPlaces] = useState([]);
 
-  const [packageType, setPackageType] = useState("CollegeIV");
+  const [packageType, setPackageType] = useState("");
   const [headCount, setHeadCount] = useState(1);
 
   const [suggestionPlaces, setSuggestionsPlaces] = useState([])
@@ -161,53 +161,60 @@ const CreateQuotation = () => {
   }, [])
 
   const handleSaveQuatation = async () => {
-
     saveQuatatioButton.current.disabled = true;
     loadingRefSaveQuatation.current.style.display = "block";
-
+  
     const dataset = {
       packageType: packageType,
       startDate: tripDataDetails.startDate,
       endDate: tripDataDetails.endDate,
       inbetweenDays: tripDataDetails.betweenDaysCount,
       startingPoint: '',
-      endingPoint: '',
-      pickupPoint: '',
-      dropPoint: '',
-      childCount: '',
-      adultCount: '',
-      transportCategory: '',
-      transportation: '',
-      roomCategory: '',
-      places: '',
-      boatHouse: '',
-      boatHouseDetails: '',
-      event: '',
-      quataionCost: '',
-      quatationStatus: '',
-      kmsTravels: '',
-      transporataionDays: '',
-      foodCost: '',
-      id: ''
+      endingPoint: "",
+      pickupPoint: "",
+      dropPoint: "",
+      childCount: "",
+      adultCount: "",
+      transportCategory: "",
+      transportation: "",
+      roomCategory: "",
+      places: "",
+      boatHouse: "",
+      boatHouseDetails: "",
+      event: "",
+      quataionCost: "",
+      quatationStatus: "",
+      kmsTravels: "",
+      transporataionDays: "transporataionDays",
+      foodCost: 'foodCost',
+      id: id
     }
-
+  
     try {
-      await axios.post(`http://localhost:8081/saveQuatation/${id}`, dataset).then((response) => {
-        setTimeout(() => {
-          if (response.status == 200 && response.data.staus == 200) {
-            saveQuatatioButton.current.disabled = false;
-            loadingRefSaveQuatation.current.style.display = "none";
-          }
-        }, 1000);
-      }).catch((err) => {
-        console.log(err)
-      })
+      await axios.post(`http://localhost:8081/saveQuatation/${id}`, dataset)
+        .then((response) => {
+          setTimeout(() => {
+            if (response.status === 200 && response.data.status === 200) {
+              saveQuatatioButton.current.disabled = false;
+              loadingRefSaveQuatation.current.style.display = "none";
+            } else {
+              // Handle non-successful response
+              console.error('Error updating quotation:', response.data.message);
+            }
+          }, 1000);
+        })
+        .catch((err) => {
+          console.log(err);
+          saveQuatatioButton.current.disabled = false;
+          loadingRefSaveQuatation.current.style.display = "none";
+        });
     } catch (error) {
       console.log(error);
+      saveQuatatioButton.current.disabled = false;
+      loadingRefSaveQuatation.current.style.display = "none";
     }
-
   }
-
+  
   const location = useLocation();
 
   // need to work on this
