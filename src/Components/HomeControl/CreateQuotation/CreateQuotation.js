@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import "./CreateQuotation.css";
 import axios from "axios";
@@ -6,7 +6,6 @@ import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 import { useLocation, useParams } from "react-router-dom";
-import { Appcontext } from "../../../App";
 
 const CreateQuotation = () => {
 
@@ -14,18 +13,14 @@ const CreateQuotation = () => {
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
 
+  const { id } = useParams();
+  const location = useLocation();
 
   const saveQuatatioButton = useRef();
   const loadingRefSaveQuatation = useRef();
 
-  const { id } = useParams()
-
   const initialCities = [
-    {
-      "id": 0,
-      "city": "",
-      "places": []
-    }
+    { "id": 0, "city": "", "places": [] }
   ];
 
   const [cities, setCities] = useState(initialCities);
@@ -35,14 +30,21 @@ const CreateQuotation = () => {
   const [headCount, setHeadCount] = useState(1);
 
   const [suggestionPlaces, setSuggestionsPlaces] = useState([])
+  const [currencyCity, setCurrenctCity] = useState(0);
+
+  const [tripDataDetails, setTripDateDetails] = useState({
+    startDate: moment(today).format('YYYY-MM-DD'),
+    endDate: moment(tomorrow).format('YYYY-MM-DD'),
+    betweenDaysCount: 1,
+  })
+
+  const [betweenDays, setBetweenDays] = useState({
+    days: []
+  })
 
   const handleCount = (e) => {
     setHeadCount(parseInt(e.target.value, 10));
   };
-
-
-
-  const [currencyCity, setCurrenctCity] = useState(0)
 
   const handleCityChange = async (index, value) => {
 
@@ -65,20 +67,7 @@ const CreateQuotation = () => {
 
   };
 
-  useEffect(() => {
-    getSuggestions()
-  }, [cities])
 
-  const getSuggestions = async () => {
-    if (cities[currencyCity].city !== '') {
-      let filteredPlaces = places.filter((place) => {
-        return !cities?.[currencyCity]?.places?.includes(place) && place.city.toLowerCase().includes(cities[currencyCity].city.toLowerCase());
-      })
-      setSuggestionsPlaces(filteredPlaces)
-    } else {
-      setSuggestionsPlaces([])
-    }
-  }
 
   const handleUpdatePlaces = async (index, value) => {
 
@@ -103,15 +92,6 @@ const CreateQuotation = () => {
 
 
 
-  const [tripDataDetails, setTripDateDetails] = useState({
-    startDate: moment(today).format('YYYY-MM-DD'),
-    endDate: moment(tomorrow).format('YYYY-MM-DD'),
-    betweenDaysCount: 1,
-  })
-
-  const [betweenDays, setBetweenDays] = useState({
-    days: []
-  })
 
   const handleDateDetails = (e, name) => {
     setTripDateDetails({
@@ -119,6 +99,114 @@ const CreateQuotation = () => {
       [name]: moment(e.target.value).format('YYYY-MM-DD')
     })
   }
+
+
+  const handleSaveQuatation = async () => {
+
+    saveQuatatioButton.current.disabled = true;
+    loadingRefSaveQuatation.current.style.display = "block";
+
+    const dataset = {
+      packageType: packageType,
+      startDate: tripDataDetails.startDate,
+      endDate: tripDataDetails.endDate,
+      inbetweenDays: tripDataDetails.betweenDaysCount,
+      startingPoint: '',
+      endingPoint: "",
+      pickupPoint: "",
+      dropPoint: "",
+      childCount: "",
+      adultCount: "",
+      transportCategory: "",
+      transportation: "",
+      roomCategory: "",
+      places: "",
+      boatHouse: "",
+      boatHouseDetails: "",
+      event: "",
+      quataionCost: "",
+      quatationStatus: "",
+      kmsTravels: "",
+      transporataionDays: "transporataionDays",
+      foodCost: 'foodCost',
+      id: id
+    }
+
+    try {
+      await axios.post(`http://localhost:8081/saveQuatation/${id}`, dataset).then((response) => {
+        setTimeout(() => {
+          if (response.status === 200 && response.data.status === 200) {
+            saveQuatatioButton.current.disabled = false;
+            loadingRefSaveQuatation.current.style.display = "none";
+          } else {
+            // Handle non-successful response
+            console.error('Error updating quotation:', response.data.message);
+          }
+        }, 1000);
+      }).catch((err) => {
+        saveQuatatioButton.current.disabled = false;
+        loadingRefSaveQuatation.current.style.display = "none";
+      });
+    } catch (error) {
+      saveQuatatioButton.current.disabled = false;
+      loadingRefSaveQuatation.current.style.display = "none";
+    }
+
+  }
+
+
+  const [quatationDetails, setQuatationDetails] = useState([])
+
+  // need to work on this
+  const getDetailsAboutQuataion = async () => {
+    await axios.post(`http://localhost:8081/getquatationbyUserID/${id}`).then((res) => {
+      setQuatationDetails(res.data.result[0])
+      updateInitialValues(res.data.result[0])
+    })
+  }
+
+  const updateInitialValues = (dataset) => {
+
+    setPackageType(dataset.packagetype)
+    setTripDateDetails({
+      startDate: dataset.startDate,
+      endDate: dataset.endDate,
+      betweenDaysCount: dataset.inbetweenDays
+    })
+    setHeadCount(dataset.headCount)
+
+  }
+
+  useEffect(() => {
+    getDetailsAboutQuataion()
+  }, [location])
+
+  const getPlaces = async () => {
+    await axios.get('http://localhost:8081/places').then((res) => {
+      setPlaces(res.data);
+    }).catch((error) => {
+      console.error("Error fetching places data:", error); // Debugging line
+    });
+  }
+
+  useEffect(() => {
+    getPlaces()
+  }, [])
+
+  const getSuggestions = async () => {
+    if (cities[currencyCity].city !== '') {
+      let filteredPlaces = places.filter((place) => {
+        return !cities?.[currencyCity]?.places?.includes(place) && place.city.toLowerCase().includes(cities[currencyCity].city.toLowerCase());
+      })
+      setSuggestionsPlaces(filteredPlaces)
+    } else {
+      setSuggestionsPlaces([])
+    }
+  }
+  
+  useEffect(() => {
+    getSuggestions()
+  }, [cities])
 
   useEffect(() => {
 
@@ -145,86 +233,6 @@ const CreateQuotation = () => {
     })
 
   }, [tripDataDetails.startDate, tripDataDetails.endDate])
-
-
-  const getPlaces = async () => {
-    await axios.get('http://localhost:8081/places').then((res) => {
-      setPlaces(res.data);
-      console.log("check", res.data);
-    }).catch((error) => {
-      console.error("Error fetching places data:", error); // Debugging line
-    });
-  }
-
-  useEffect(() => {
-    getPlaces()
-  }, [])
-
-  const handleSaveQuatation = async () => {
-    saveQuatatioButton.current.disabled = true;
-    loadingRefSaveQuatation.current.style.display = "block";
-  
-    const dataset = {
-      packageType: packageType,
-      startDate: tripDataDetails.startDate,
-      endDate: tripDataDetails.endDate,
-      inbetweenDays: tripDataDetails.betweenDaysCount,
-      startingPoint: '',
-      endingPoint: "",
-      pickupPoint: "",
-      dropPoint: "",
-      childCount: "",
-      adultCount: "",
-      transportCategory: "",
-      transportation: "",
-      roomCategory: "",
-      places: "",
-      boatHouse: "",
-      boatHouseDetails: "",
-      event: "",
-      quataionCost: "",
-      quatationStatus: "",
-      kmsTravels: "",
-      transporataionDays: "transporataionDays",
-      foodCost: 'foodCost',
-      id: id
-    }
-  
-    try {
-      await axios.post(`http://localhost:8081/saveQuatation/${id}`, dataset)
-        .then((response) => {
-          setTimeout(() => {
-            if (response.status === 200 && response.data.status === 200) {
-              saveQuatatioButton.current.disabled = false;
-              loadingRefSaveQuatation.current.style.display = "none";
-            } else {
-              // Handle non-successful response
-              console.error('Error updating quotation:', response.data.message);
-            }
-          }, 1000);
-        })
-        .catch((err) => {
-          console.log(err);
-          saveQuatatioButton.current.disabled = false;
-          loadingRefSaveQuatation.current.style.display = "none";
-        });
-    } catch (error) {
-      console.log(error);
-      saveQuatatioButton.current.disabled = false;
-      loadingRefSaveQuatation.current.style.display = "none";
-    }
-  }
-  
-  const location = useLocation();
-
-  // need to work on this
-  const getDetailsAboutQuataion = async () => {
-
-  }
-
-  useEffect(() => {
-    console.log(location.state);
-  }, [location])
 
   return (
     <div className="row container-fluid m-0 p-0">
