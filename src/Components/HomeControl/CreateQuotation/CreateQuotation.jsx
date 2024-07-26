@@ -162,6 +162,7 @@ const CreateQuotation = () => {
     await axios.post(`http://localhost:8081/getquatationbyUserID/${id}`).then((res) => {
       setQuatationDetails(res.data.result[0])
       updateInitialValues(res.data.result[0])
+      console.log(res);
     })
   }
 
@@ -177,10 +178,6 @@ const CreateQuotation = () => {
 
   }
 
-  useEffect(() => {
-    getDetailsAboutQuataion()
-  }, [location])
-
   const getPlaces = async () => {
     await axios.get('http://localhost:8081/places').then((res) => {
       setPlaces(res.data);
@@ -189,9 +186,6 @@ const CreateQuotation = () => {
     });
   }
 
-  useEffect(() => {
-    getPlaces()
-  }, [])
 
   const getSuggestions = async () => {
     if (cities[currencyCity].city !== '') {
@@ -203,10 +197,6 @@ const CreateQuotation = () => {
       setSuggestionsPlaces([])
     }
   }
-  
-  useEffect(() => {
-    getSuggestions()
-  }, [cities])
 
   useEffect(() => {
 
@@ -233,6 +223,18 @@ const CreateQuotation = () => {
     })
 
   }, [tripDataDetails.startDate, tripDataDetails.endDate])
+
+  useEffect(() => {
+    getDetailsAboutQuataion()
+  }, [id])
+
+  useEffect(() => {
+    getSuggestions()
+  }, [cities])
+
+  useEffect(() => {
+    getPlaces()
+  }, [])
 
   return (
     <div className="row container-fluid m-0 p-0">

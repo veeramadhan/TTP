@@ -38,19 +38,16 @@ const Homepage = () => {
   const [quatationlist, setquatationlist] = useState([]);
 
   const getQuatationsByID = async () => {
-    await axios
-      .post(`http://localhost:8081/getquatationbyUserID/${userDetails.userId}`)
-      .then((response) => {
-        if (response.status === 200 && response.data.status == 200) {
-          console.log("updated");
-          setquatationlist(response.data.result);
-          console.log("data", response.data.result);
-        }
-        console.log(response);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    await axios.post(`http://localhost:8081/getquatationbyUserID/${userDetails.userId}`).then((response) => {
+      if (response.status === 200 && response.data.status == 200) {
+        console.log("updated");
+        setquatationlist(response.data.result);
+        console.log("data", response.data.result);
+      }
+      console.log(response);
+    }).catch((err) => {
+      console.log(err);
+    });
   };
 
   useEffect(() => {
