@@ -53,7 +53,6 @@ const CreateQuotation = () => {
       city: value,
       places: []
     };
-
     const updatedCities = [...cities];
     if (index >= updatedCities.length) {
       for (let i = updatedCities.length; i <= index; i++) {
