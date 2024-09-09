@@ -6,6 +6,9 @@ import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 import { useLocation, useParams } from "react-router-dom";
+import { jsPDF } from "jspdf";
+import autoTable from 'jspdf-autotable';
+
 
 const CreateQuotation = () => {
 
@@ -53,6 +56,7 @@ const CreateQuotation = () => {
       city: value,
       places: []
     };
+
     const updatedCities = [...cities];
     if (index >= updatedCities.length) {
       for (let i = updatedCities.length; i <= index; i++) {
@@ -84,9 +88,6 @@ const CreateQuotation = () => {
     }
     updatedCities[index] = dataset;
     setCities(updatedCities);
-
-
-
   }
 
 
@@ -154,11 +155,54 @@ const CreateQuotation = () => {
   }
 
 
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+  
+    // Text alignment
+    doc.text("Quotation Details", pageWidth / 2, 10, { align: 'center' });
+    doc.text(`Package Type: ${packageType}`, pageWidth / 2, 20, { align: 'center' });
+    doc.text(`Head Count: ${headCount}`, pageWidth / 2, 30, { align: 'center' });
+    doc.text(`Start Date: ${tripDataDetails.startDate}`, pageWidth / 2, 40, { align: 'center' });
+    doc.text(`End Date: ${tripDataDetails.endDate}`, pageWidth / 2, 50, { align: 'center' });
+    doc.text(`Number of Days: ${tripDataDetails.betweenDaysCount}`, pageWidth / 2, 60, { align: 'center' });
+  
+    // Table alignment
+    const tableData = cities.map((city, index) => [
+      `Day ${index + 1}`,
+      city.city,
+      city.places.map(place => place.name).join(", ")
+    ]);
+  
+    autoTable(doc, {
+      head: [['Day', 'City', 'Places']],
+      body: tableData,
+      startY: 70, // Position the table below the text
+      styles: {
+        cellPadding: 2,
+        fontSize: 10,
+        valign: 'middle', // Vertical alignment of the cell content
+      },
+      headStyles: {
+        fillColor: [255, 0, 0], // Header row background color
+        textColor: [255, 255, 255], // Header text color
+        fontStyle: 'bold',
+        halign: 'center' // Horizontal alignment of header text
+      },
+      bodyStyles: {
+        halign: 'left', // Horizontal alignment of body text
+      }
+    });
+  
+    doc.save(`quotation_${id}.pdf`);
+  }
+  
+
   const [quatationDetails, setQuatationDetails] = useState([])
 
   // need to work on this
   const getDetailsAboutQuataion = async () => {
-    await axios.post(`http://localhost:8081/getquatationbyUserID/${id}`).then((res) => {
+    await axios.post(`http://localhost:8081/getquatationbyQuatationid/${id}`).then((res) => {
       setQuatationDetails(res.data.result[0])
       updateInitialValues(res.data.result[0])
       console.log(res);
@@ -169,11 +213,12 @@ const CreateQuotation = () => {
 
     setPackageType(dataset.packagetype)
     setTripDateDetails({
-      startDate: dataset.startDate,
-      endDate: dataset.endDate,
-      betweenDaysCount: dataset.inbetweenDays
-    })
-    setHeadCount(dataset.headCount)
+      startDate: dataset.StartDate ? moment(dataset.StartDate).format('YYYY-MM-DD') : moment(today).format('YYYY-MM-DD'),
+      endDate: dataset.EndDate ? moment(dataset.EndDate).format('YYYY-MM-DD') : moment(tomorrow).format('YYYY-MM-DD'),
+      betweenDaysCount: dataset.inbetweendays || 1
+    });
+
+    setHeadCount(dataset.headCount || 0)
 
   }
 
@@ -363,6 +408,9 @@ const CreateQuotation = () => {
 
         <div className="col-12 border-top px-1 pt-3">
           <button className="btn btn-primary d-flex align-items-center" ref={saveQuatatioButton} onClick={() => handleSaveQuatation()}>Save quatation<i ref={loadingRefSaveQuatation} style={{ display: 'none' }} class="fa-solid fa-spinner fa-spin-pulse ml-2"></i></button>
+        </div>
+        <div className="d-flex justify-content-between align-items-center col-6 border-bottom pb-2 px-1 mb-2 m-0 p-0">
+          <button className="btn btn-primary w-100 my-1" onClick={generatePDF}>Generate PDF</button>
         </div>
 
       </div>
