@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef,useCallback  } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import "./CreateQuotation.css";
 import axios from "axios";
@@ -8,6 +8,10 @@ import { faUser } from '@fortawesome/free-solid-svg-icons'
 import { useLocation, useParams } from "react-router-dom";
 import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
+import debounce from 'lodash/debounce';
+import 'jspdf-autotable';
+
+
 
 
 const CreateQuotation = () => {
@@ -28,6 +32,8 @@ const CreateQuotation = () => {
 
   const [cities, setCities] = useState(initialCities);
   const [places, setPlaces] = useState([]);
+  const [selectedActivities, setSelectedActivities] = useState([]);
+  const [counts, setCounts] = useState({}); // Holds the count for each activity
 
   const [packageType, setPackageType] = useState("");
   const [headCount, setHeadCount] = useState(1);
@@ -40,6 +46,9 @@ const CreateQuotation = () => {
     endDate: moment(tomorrow).format('YYYY-MM-DD'),
     betweenDaysCount: 1,
   })
+  const [extraActivities, setExtraActivities] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  
 
   const [betweenDays, setBetweenDays] = useState({
     days: []
@@ -100,6 +109,82 @@ const CreateQuotation = () => {
     })
   }
 
+
+  const debouncedGetSuggestions = useCallback(
+    debounce(() => getSuggestions(), 300),
+    []
+  );
+
+  // Function to handle activity selection
+const handleActivitySelection = (activity) => {
+  // Check if activity is already selected
+  const isSelected = selectedActivities.find((item) => item.name === activity.name);
+  
+  if (!isSelected) {
+      // Add the activity to selected activities
+      setSelectedActivities([...selectedActivities, activity]);
+  } else {
+      // If already selected, remove it (optional: you can toggle the selection)
+      setSelectedActivities(selectedActivities.filter((item) => item.name !== activity.name));
+  }
+};
+
+
+  // Handle increment
+  const increment = (id, activity) => {
+    const newCount = (counts[id] || 0) + 1;
+    updateCountsAndSelectedActivities(id, newCount, activity);
+};
+
+// Handle decrement
+const decrement = (id, activity) => {
+    const newCount = Math.max((counts[id] || 0) - 1, 0);
+    updateCountsAndSelectedActivities(id, newCount, activity);
+};
+
+// Update counts and selected activities
+const updateCountsAndSelectedActivities = (id, newCount, activity) => {
+  // Update the count state
+  setCounts(prevCounts => ({
+      ...prevCounts,
+      [id]: newCount,
+  }));
+
+  // If count is more than 0, update the selected activities; else, remove it
+  setSelectedActivities(prevSelected => {
+      const updatedActivities = prevSelected.filter(act => act.id !== id);
+      if (newCount > 0) {
+          return [...updatedActivities, { ...activity, count: newCount }];
+      }
+      return updatedActivities;
+  });
+};
+
+// Filter activities based on search query
+const filteredActivities = extraActivities.filter(
+  activity => 
+      activity.city.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      activity.name.toLowerCase().includes(searchQuery.toLowerCase())
+);
+  
+  const totalPrice = cities.reduce((total, city) => {
+    const cityTotal = city.places.reduce((sum, place) => {
+      return sum + place.adultrate * headCount; // Adjust as per head count logic
+    }, 0);
+    return total + cityTotal;
+  }, 0);
+
+  // Calculate total quotation
+  const totalQuotation = selectedActivities.reduce((total, act) => {
+    return total + act.count * act.rate;
+}, 0);
+
+  const totalamount = totalPrice + totalQuotation
+  
+
+  const sinlePerson =  totalamount / headCount
+
+   
 
   const handleSaveQuatation = async () => {
 
@@ -242,6 +327,27 @@ const CreateQuotation = () => {
     }
   }
 
+   // Fetch data on page load
+   useEffect(() => {
+    fetchData();
+}, [searchQuery]);
+
+const fetchData = async () => {
+    try {
+        const response = await axios.get(`http://localhost:8081/extraactivites`, {
+            params: {
+                search: searchQuery,
+            }
+        });
+        setExtraActivities(response.data);
+        console.log(response,"dta");
+        
+    } catch (error) {
+        console.error("Error fetching data", error);
+    }
+};
+
+
   useEffect(() => {
 
     const inBetween = [];
@@ -279,6 +385,8 @@ const CreateQuotation = () => {
   useEffect(() => {
     getPlaces()
   }, [])
+
+      
 
   return (
     <div className="row container-fluid m-0 p-0">
@@ -363,7 +471,58 @@ const CreateQuotation = () => {
           </div>
         </div>
 
-      </div>
+
+        <div className="container mt-4">
+            <h6 className="border-bottom pb-2 mb-2">Search Extra Activities</h6>
+            <input
+                type="text"
+                className="form-control mb-3"
+                placeholder="Search by city or activity name"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+            />
+
+            <div className="d-flex flex-wrap">
+                {filteredActivities.map((activity) => (
+                    <div className="border py-1 px-3 col-12 m-0 p-0 my-2 mx-2" key={activity.id}>
+                        <div className="d-flex m-0 p-0 mb-1 align-items-center justify-content-between">
+                            <p className="m-0 p-0" style={{ fontSize: 14, fontWeight: 600 }}>
+                                {activity.city} ({activity.name})
+                            </p>
+                            <p style={{ fontSize: 12 }} className="m-0 p-0">
+                                {activity.maxpax} x <FontAwesomeIcon icon={faUser} style={{ fontSize: 12 }} />
+                            </p>
+                        </div>
+
+                        <div className="d-flex justify-content-between">
+                            <div className="d-flex m-0 p-0 align-items-center">
+                                <p className="m-0 p-0" style={{ fontSize: 12, fontWeight: 600, lineHeight: 1 }}>
+                                    Rate: {activity.rate} INR
+                                </p>
+                                <span className="m-0 p-0 mx-2" style={{ fontSize: 12 }}>
+                                    ( {activity.packagetype} )
+                                </span>
+                            </div>
+
+                            <div style={{ textAlign: 'center' }}>
+                                <h6>Count: {counts[activity.id] || 0}</h6>
+                                <button onClick={() => increment(activity.id, activity)} style={{ marginRight: '10px' }}>
+                                    Increment
+                                </button>
+                                <button onClick={() => decrement(activity.id, activity)}>
+                                    Decrement
+                                </button>
+                                <p>Total: {(counts[activity.id] || 0) * activity.rate} INR</p>
+                            </div>
+                        </div>
+                        <p className="text-muted my-1" style={{ fontSize: 10, lineHeight: 1.5 }}>
+                            {activity.description}
+                        </p>
+                    </div>
+                ))}
+            </div>
+            </div>
+            </div>
 
       <div className="col-4 px-2 py-3 d-flex flex-wrap rounded-3 align-items-start align-content-start m-0 border my-3">
 
@@ -389,6 +548,7 @@ const CreateQuotation = () => {
                       <span className="m-0 p-0 px-1 text-muted" style={{ fontSize: 10 }}>( {value} )</span>
                       <span className="m-0 p-0 px-1 text-muted" style={{ fontSize: 10 }}>-</span>
                       <p className="m-0 p-0" style={{ fontSize: 12 }}>{cities?.[key]?.city}</p>
+                      
                     </div>
                     <div className="day-wise-placesDetails">
                       {
@@ -402,9 +562,31 @@ const CreateQuotation = () => {
                 ))
               }
             </div>
+
+            <h6 className="m-0 p-0 mb-1">Extra Activities</h6>
+    <div className="d-flex flex-column align-items-start">
+    {selectedActivities.length > 0 ? (
+                    <ul>
+                        {selectedActivities.map(act => (
+                            <li key={act.id}>
+                                {act.name} ({act.city}) - {act.count} x {act.rate} INR = {act.count * act.rate} INR
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p>No activities selected</p>
+                )}
+                <h6>Total +  Extra Activities: {totalQuotation} INR</h6>
+    </div>
+
             <span>End date : {moment(tripDataDetails.endDate).format('YYYY-MM-DD')}</span>
           </div>
-        </div>
+
+           {/* Display total price */}
+    <p className="m-0 p-0" style={{ fontSize: 16, fontWeight: 'bold' }}>Entry Tickets: {totalPrice} INR</p>
+    <p className="m-0 p-0" style={{ fontSize: 16, fontWeight: 'bold' }}>SinlePerson: {sinlePerson} INR</p>
+   
+    </div>
 
         <div className="col-12 border-top px-1 pt-3">
           <button className="btn btn-primary d-flex align-items-center" ref={saveQuatatioButton} onClick={() => handleSaveQuatation()}>Save quatation<i ref={loadingRefSaveQuatation} style={{ display: 'none' }} class="fa-solid fa-spinner fa-spin-pulse ml-2"></i></button>
